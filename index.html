@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Little Surprise For You</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sacramento&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- Library Canvas Confetti untuk Efek Kembang Api/Konfeti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.4/dist/confetti.browser.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #4a90e2, #70a1ff, #a0c4ff);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 420px;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        /* Hujan Hati / Sparkles Background */
+        .heart-particle {
+            position: fixed;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+            animation: floatUp 4s linear infinite;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(100vh) scale(0.5); opacity: 1; }
+            100% { transform: translateY(-10vh) scale(1.2); opacity: 0; }
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            padding: 25px 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 50, 100, 0.2);
+            position: relative;
+            z-index: 1;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        /* Styling Scrollbar Card Utama */
+        .card::-webkit-scrollbar {
+            width: 5px;
+        }
+        .card::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 10px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Styling Judul & Teks */
+        h1.title-serif {
+            font-family: 'Sacramento', cursive;
+            font-size: 2.8rem;
+            color: #e0f2fe;
+            margin-bottom: 10px;
+        }
+
+        h2.name {
+            font-size: 1.6rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #e0f2fe;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        p.message {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: #f0f8ff;
+            margin-bottom: 20px;
+            text-align: justify;
+        }
+
+        /* Tombol Utama */
+        .btn {
+            background: #ffffff;
+            color: #1e88e5;
+            border: none;
+            padding: 12px 28px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        /* STYLING LOCKSCREEN / PIN SECTION */
+        .dots-container {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin: 20px 0 25px;
+        }
+
+        .dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.7);
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+
+        .dot.filled {
+            background-color: #ffffff;
+            border-color: #ffffff;
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.9);
+        }
+
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            max-width: 280px;
+            margin: 0 auto;
+        }
+
+        .key-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #ffffff;
+            font-size: 1.2rem;
+            font-weight: 600;
+            padding: 15px 0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .key-btn:active {
+            background: rgba(255, 255, 255, 0.4);
+            transform: scale(0.95);
+        }
+
+        .pin-hint {
+            font-size: 0.75rem;
+            color: #e0f2fe;
+            margin-top: 15px;
+            opacity: 0.9;
+        }
+
+        .pin-error {
+            color: #ffdde1;
+            font-size: 0.8rem;
+            margin-top: 10px;
+            min-height: 20px;
+            font-weight: 500;
+        }
+
+        /* Grid "Things I Like About You" */
+        .grid-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .grid-item {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 12px;
+            border-radius: 12px;
+            text-align: left;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+        }
+
+        .grid-item h4 {
+            font-size: 0.85rem;
+            color: #e0f2fe;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .grid-item p {
+            font-size: 0.75rem;
+            line-height: 1.3;
+            color: #f0f8ff;
+        }
+
+        /* FITUR GALERI DENGAN SCROLL KE BAWAH (VERTICAL) */
+        .gallery-vertical {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            max-height: 250px;
+            overflow-y: auto;
+            padding: 10px 5px;
+            margin-bottom: 15px;
+        }
+
+        .gallery-vertical::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .gallery-vertical::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 10px;
+        }
+
+        .gallery-vertical img {
+            width: 100%;
+            height: 110px;
+            object-fit: cover;
+            border-radius: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .gallery-vertical img:active {
+            transform: scale(0.95);
+        }
+
+        /* FITUR 3: CAPTION PADA MODAL POPUP ZOOM FOTO */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(10, 25, 47, 0.85);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+        }
+
+        .modal img {
+            max-width: 90%;
+            max-height: 70%;
+            border-radius: 15px;
+            border: 3px solid #fff;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+
+        .modal-caption {
+            margin-top: 15px;
+            color: #ffffff;
+            font-size: 0.9rem;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 18px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            text-align: center;
+            max-width: 85%;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            color: #fff;
+            font-size: 30px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* FITUR 5: FLIP CARDS / CATATAN RAHASIA */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 15px 0 20px;
+        }
+
+        .flip-card {
+            background-color: transparent;
+            height: 85px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .flip-card-front {
+            background: rgba(255, 255, 255, 0.25);
+            color: white;
+        }
+
+        .flip-card-back {
+            background: #ffffff;
+            color: #1e88e5;
+            transform: rotateY(180deg);
+            font-size: 0.7rem;
+            font-weight: 600;
+            line-height: 1.2;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+
+        /* Animation Lilin */
+        .candle-container {
+            margin: 30px 0;
+            cursor: pointer;
+        }
+
+        .candle {
+            width: 34px;
+            height: 90px;
+            background: #ffffff;
+            margin: 0 auto;
+            border-radius: 6px 6px 0 0;
+            position: relative;
+        }
+
+        .flame {
+            width: 16px;
+            height: 30px;
+            background: #ff9800;
+            border-radius: 50% 50% 20% 20%;
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 0 15px #ff9800, 0 0 30px #ff5722;
+            animation: flicker 0.1s infinite alternate;
+        }
+
+        @keyframes flicker {
+            0% { transform: translateX(-50%) scale(1); }
+            100% { transform: translateX(-50%) scale(1.1); }
+        }
+
+        .flame.off {
+            display: none;
+        }
+
+        .subtext {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <!-- HALAMAN PIN / LOCKSCREEN -->
+        <div id="pagePin" class="card">
+            <p style="font-size: 1.5rem; margin-bottom: 5px;">🩵</p>
+            <h2 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 5px;">Happy Birthday, Sayangku</h2>
+            <p style="font-size: 0.8rem; opacity: 0.9;">Enter the secret code</p>
+
+            <div class="dots-container">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+
+            <div class="keypad">
+                <button class="key-btn" onclick="pressKey('1')">1</button>
+                <button class="key-btn" onclick="pressKey('2')">2</button>
+                <button class="key-btn" onclick="pressKey('3')">3</button>
+                <button class="key-btn" onclick="pressKey('4')">4</button>
+                <button class="key-btn" onclick="pressKey('5')">5</button>
+                <button class="key-btn" onclick="pressKey('6')">6</button>
+                <button class="key-btn" onclick="pressKey('7')">7</button>
+                <button class="key-btn" onclick="pressKey('8')">8</button>
+                <button class="key-btn" onclick="pressKey('9')">9</button>
+                <button class="key-btn" onclick="pressKey('del')">✕</button>
+                <button class="key-btn" onclick="pressKey('0')">0</button>
+                <button class="key-btn" onclick="pressKey('enter')">↵</button>
+            </div>
+
+            <p id="pinError" class="pin-error"></p>
+            <p class="pin-hint">Hint: 290906 💙</p>
+        </div>
+
+        <!-- HALAMAN 1: Tombol Pembuka (Open) -->
+        <div id="page1" class="card hidden">
+            <h1 class="title-serif">A Little Surprise</h1>
+            <p style="margin-bottom: 25px; font-size: 0.9rem;">Made Just for You 💙</p>
+            <button class="btn" onclick="goToPage(2)">OPEN 💙</button>
+        </div>
+
+        <!-- HALAMAN 2: Ucapan & Surat Utama -->
+        <div id="page2" class="card hidden">
+            <p style="font-size: 0.8rem; letter-spacing: 2px;">CELEBRATING</p>
+            <h2 class="name">Lusi Septiana</h2>
+            <p style="font-style: italic; font-size: 0.85rem; margin-bottom: 15px;">"Semoga kamu bahagia. Hari ini dan seterusnya."</p>
+            
+            <!-- FITUR 2: Typewriter Effect Container -->
+            <p class="message" id="typewriterMessage"></p>
+            
+            <!-- FITUR 5: Secret Flip Cards -->
+            <p style="font-size: 0.8rem; font-weight: 600; margin: 15px 0 5px;">Buka Pesan Rahasia 🎁 (Klik Kartu)</p>
+            <div class="cards-grid">
+                <div class="flip-card" onclick="flipCard(this)">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <span style="font-size:1.2rem;">✉️</span>
+                            <span style="font-size:0.65rem;">Kartu 1</span>
+                        </div>
+                        <div class="flip-card-back">
+                            Janji ya harus selalu bahagia! 😊
+                        </div>
+                    </div>
+                </div>
+                <div class="flip-card" onclick="flipCard(this)">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <span style="font-size:1.2rem;">🍦</span>
+                            <span style="font-size:0.65rem;">Kartu 2</span>
+                        </div>
+                        <div class="flip-card-back">
+                           Nanti Kita beli Es Krim Aku Yang Bayar! 🍦
+                        </div>
+                    </div>
+                </div>
+                <div class="flip-card" onclick="flipCard(this)">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <span style="font-size:1.2rem;">🌟</span>
+                            <span style="font-size:0.65rem;">Kartu 3</span>
+                        </div>
+                        <div class="flip-card-back">
+                            Jangan lupa tersenyum hari ini ✨
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn" onclick="goToPage(3)">Lanjut 👇</button>
+        </div>
+
+        <!-- HALAMAN 3: Things I Like About You & Photo Gallery -->
+        <div id="page3" class="card hidden">
+            <h3 style="font-size: 1.2rem; margin-bottom: 5px;">Things I Like About You</h3>
+            <p style="font-size: 0.75rem; margin-bottom: 15px;">Hal kecil yang buat kamu lebih istimewa</p>
+
+            <div class="grid-container">
+                <div class="grid-item">
+                    <h4>😊 Senyum Kamu</h4>
+                    <p>Bikin hari-hari aku terasa jauh lebih baik.</p>
+                </div>
+                <div class="grid-item">
+                    <h4>✨ Jadi Diri Sendiri</h4>
+                    <p>Aku suka kamu yang apa adanya, Nggak perlu jadi orang lain.</p>
+                </div>
+                <div class="grid-item">
+                    <h4>💖 Cara Kamu Peduli</h4>
+                    <p>Perhatian kecil dari kamu selalu bikin hati hangat.</p>
+                </div>
+                <div class="grid-item">
+                    <h4>🌱 Semangat Kamu</h4>
+                    <p>Lihat kamu terus berusaha bikin aku ikut semangat.</p>
+                </div>
+            </div>
+
+            <p style="font-size: 0.85rem; margin-top: 15px; font-weight: 600;">Photo Gallery 📸</p>
+            <p style="font-size: 0.7rem; opacity: 0.8; margin-bottom: 8px;">(Scroll ke bawah & Klik gambar untuk memperbesar)</p>
+            
+            <!-- GALERI 4 FOTO DENGAN CAPTION (FITUR 3) -->
+            <div class="gallery-vertical">
+                <img src="01.jpeg" onclick="openPhoto(this.src, 'Momen terbaik saat kamu tersenyum ✨')" alt="Foto 1">
+                <img src="02.jpeg" onclick="openPhoto(this.src, 'Foto favoritku, cantik seperti biasa 💙')" alt="Foto 2">
+                <img src="03.jpeg" onclick="openPhoto(this.src, 'Kenangan indah yang selalu diingat 📸')" alt="Foto 3">
+                <img src="04.jpeg" onclick="openPhoto(this.src, 'Tetap jadi dirimu yang baik ya! 🌷')" alt="Foto 4">
+            </div>
+
+            <button class="btn" style="margin-top: 10px;" onclick="goToPage(4)">Saatnya Berdoa 🤲</button>
+        </div>
+
+        <!-- HALAMAN 4: Make a Wish / Berdoa -->
+        <div id="page4" class="card hidden">
+            <h2 class="name">Saatnya Berdoa</h2>
+            <p class="message" style="text-align: center;">
+                Sebelum tiup lilinnya, ucapin semua harapan yang kamu simpan diam-diam. Semoga Tuhan ngabulin semuanya... 
+                <br><br>
+                Klik tombol di bawah jika sudah selesai berdoa.
+            </p>
+            <button class="btn" onclick="goToPage(5)">Mulai Berdoa & Tiup Lilin 🕯️</button>
+        </div>
+
+        <!-- HALAMAN 5: Tiup Lilin Interactive -->
+        <div id="page5" class="card hidden">
+            <h3 style="font-size: 1.1rem;">Tutup matamu & Tiup Lilinnya</h3>
+            
+            <div class="candle-container" onclick="blowCandle()">
+                <div class="candle">
+                    <div id="flame" class="flame"></div>
+                </div>
+            </div>
+
+            <p class="subtext">Klik pada lilin untuk meniupnya 🌬️</p>
+        </div>
+
+        <!-- HALAMAN 6: Ucapan Penutup (Setelah Lilin Mati) -->
+        <div id="page6" class="card hidden">
+            <h1 class="title-serif">Happy Birthday</h1>
+            <h2 class="name" style="border: none;">Lusi Septiana 🩵</h2>
+            <p class="message" style="text-align: center;">
+                Best wishes for special people.<br>
+                Maaf nggak bisa merayakan langsung di hadapanmu, tapi do'aku tulus semoga semesta selalu berpihak ke kamu! ✨🎂🎉
+            </p>
+        </div>
+
+    </div>
+
+    <!-- MODAL POPUP ZOOM FOTO (FITUR 3: DITAMBAHKAN CAPTION) -->
+    <div id="imageModal" class="modal hidden" onclick="closePhoto()">
+        <span class="close-btn">&times;</span>
+        <img id="modalImg" src="" alt="Zoom Foto">
+        <div id="modalCaption" class="modal-caption"></div>
+    </div>
+
+    <!-- Audio Musik Background -->
+    <audio id="bgMusic" loop>
+        <source src="music.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        // Efek Hujan Hati / Partikel
+        function createHearts() {
+            for (let i = 0; i < 25; i++) {
+                let heart = document.createElement('div');
+                heart.classList.add('heart-particle');
+                heart.innerHTML = '🩵';
+                heart.style.left = Math.random() * 100 + 'vw';
+                heart.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                heart.style.animationDelay = Math.random() * 2 + 's';
+                document.body.appendChild(heart);
+            }
+        }
+        createHearts();
+
+        // LOGIKA PIN/PASSCODE
+        const correctPin = "290906";
+        let enteredPin = "";
+
+        function pressKey(val) {
+            const errorElement = document.getElementById("pinError");
+            errorElement.innerText = "";
+
+            if (val === 'del') {
+                enteredPin = enteredPin.slice(0, -1);
+            } else if (val === 'enter') {
+                checkPin();
+                return;
+            } else {
+                if (enteredPin.length < 6) {
+                    enteredPin += val;
+                }
+            }
+
+            updateDots();
+
+            // Otomatis verifikasi jika sudah mengetik 6 digit
+            if (enteredPin.length === 6) {
+                setTimeout(checkPin, 150);
+            }
+        }
+
+        function updateDots() {
+            const dots = document.querySelectorAll('.dot');
+            dots.forEach((dot, index) => {
+                if (index < enteredPin.length) {
+                    dot.classList.add('filled');
+                } else {
+                    dot.classList.remove('filled');
+                }
+            });
+        }
+
+        function checkPin() {
+            const errorElement = document.getElementById("pinError");
+            if (enteredPin === correctPin) {
+                document.getElementById('pagePin').classList.add('hidden');
+                document.getElementById('page1').classList.remove('hidden');
+            } else {
+                errorElement.innerText = "PIN Salah, coba lagi!";
+                enteredPin = "";
+                updateDots();
+            }
+        }
+
+        // FITUR 2: EFEK MENGETIK (TYPEWRITER EFFECT)
+        const fullMessage = "Happy Birthday Sayangku, Lusi Septiana 💖\n\nSelamat bertambah usia yaa. Di usia kamu yang sekarang, aku harap kamu selalu dikelilingi hal-hal baik, dipermudah setiap langkahnya, dan diberi kebahagiaan yang tiada habisnya.\n\nTerima kasih sudah hadir di hidupku, tetaplah jadi diri kamu yang baik yaa.";
+        let typeIndex = 0;
+        let isTypingStarted = false;
+
+        function startTypewriter() {
+            if (isTypingStarted) return;
+            isTypingStarted = true;
+            const target = document.getElementById("typewriterMessage");
+            target.innerHTML = "";
+            
+            function typeChar() {
+                if (typeIndex < fullMessage.length) {
+                    let char = fullMessage.charAt(typeIndex);
+                    if (char === '\n') {
+                        target.innerHTML += '<br>';
+                    } else {
+                        target.innerHTML += char;
+                    }
+                    typeIndex++;
+                    setTimeout(typeChar, 35);
+                }
+            }
+            typeChar();
+        }
+
+        // Navigasi Halaman
+        function goToPage(pageNumber) {
+            for (let i = 1; i <= 6; i++) {
+                document.getElementById('page' + i).classList.add('hidden');
+            }
+            document.getElementById('page' + pageNumber).classList.remove('hidden');
+
+            if (pageNumber === 2) {
+                let audio = document.getElementById('bgMusic');
+                audio.play().catch(e => console.log("Autoplay blocked"));
+                startTypewriter(); // Jalankan efek mengetik di halaman 2
+            }
+        }
+
+        // FITUR 3: FUNGSI BUKA & TUTUP ZOOM FOTO DENGAN CAPTION
+        function openPhoto(src, caption) {
+            document.getElementById('modalImg').src = src;
+            document.getElementById('modalCaption').innerText = caption || '';
+            document.getElementById('imageModal').classList.remove('hidden');
+        }
+
+        function closePhoto() {
+            document.getElementById('imageModal').classList.add('hidden');
+        }
+
+        // FITUR 5: FUNGSI MEMBALIK KARTU (FLIP CARD)
+        function flipCard(cardElement) {
+            cardElement.classList.toggle('flipped');
+        }
+
+        // FITUR 2: FUNGSI TIUP LILIN + KONFETI / KEMBANG API
+        function blowCandle() {
+            let flame = document.getElementById('flame');
+            flame.classList.add('off');
+            
+            // Efek Konfeti Pertama
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+
+            setTimeout(() => {
+                goToPage(6);
+                
+                // Efek Konfeti Beruntun (Kembang Api) saat Halaman 6 muncul
+                let duration = 3 * 1000;
+                let end = Date.now() + duration;
+
+                (function frame() {
+                    confetti({
+                        particleCount: 5,
+                        angle: 60,
+                        spread: 55,
+                        origin: { x: 0 }
+                    });
+                    confetti({
+                        particleCount: 5,
+                        angle: 120,
+                        spread: 55,
+                        origin: { x: 1 }
+                    });
+
+                    if (Date.now() < end) {
+                        requestAnimationFrame(frame);
+                    }
+                }());
+
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
