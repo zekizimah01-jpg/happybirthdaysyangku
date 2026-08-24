@@ -217,7 +217,60 @@
             color: #f0f8ff;
         }
 
-        /* FITUR GALERI DENGAN SCROLL KE BAWAH (VERTICAL) */
+        /* STYLING SLIDER GESER GALERI */
+        .swipe-container {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 18px;
+            padding: 15px 10px;
+            margin: 15px 0;
+        }
+
+        .swipe-label {
+            font-size: 0.8rem;
+            margin-bottom: 10px;
+            color: #ffffff;
+            font-weight: 500;
+        }
+
+        .swipe-track {
+            width: 100%;
+            height: 46px;
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: 25px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            overflow: hidden;
+        }
+
+        .swipe-arrows {
+            font-size: 0.85rem;
+            letter-spacing: 3px;
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .swipe-handle {
+            width: 40px;
+            height: 40px;
+            background: #ffffff;
+            border-radius: 50%;
+            position: absolute;
+            left: 3px;
+            top: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: grab;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            touch-action: none;
+        }
+
+        /* FITUR GALERI DENGAN SCROLL KE BAWAH (VERTICAL) - 6 FOTO */
         .gallery-vertical {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -517,18 +570,31 @@
                 </div>
             </div>
 
-            <p style="font-size: 0.85rem; margin-top: 15px; font-weight: 600;">Photo Gallery 📸</p>
-            <p style="font-size: 0.7rem; opacity: 0.8; margin-bottom: 8px;">(Scroll ke bawah & Klik gambar untuk memperbesar)</p>
-            
-            <!-- GALERI 4 FOTO DENGAN CAPTION (FITUR 3) -->
-            <div class="gallery-vertical">
-                <img src="01.jpeg" onclick="openPhoto(this.src, 'Momen terbaik saat kamu tersenyum ✨')" alt="Foto 1">
-                <img src="02.jpeg" onclick="openPhoto(this.src, 'Foto favoritku, cantik seperti biasa 💙')" alt="Foto 2">
-                <img src="03.jpeg" onclick="openPhoto(this.src, 'Kenangan indah yang selalu diingat 📸')" alt="Foto 3">
-                <img src="04.jpeg" onclick="openPhoto(this.src, 'Tetap jadi dirimu yang baik ya! 🌷')" alt="Foto 4">
+            <!-- FITUR GESER UNTUK MEMBUKA GALERI (SWIPE SLIDER) -->
+            <div id="swipeSection" class="swipe-container">
+                <p class="swipe-label">Geser untuk membuka galeri</p>
+                <div class="swipe-track" id="swipeTrack">
+                    <span class="swipe-arrows">&gt;&gt; &gt;&gt; &gt;&gt;</span>
+                    <div class="swipe-handle" id="swipeHandle">🎁</div>
+                </div>
             </div>
 
-            <button class="btn" style="margin-top: 10px;" onclick="goToPage(4)">Saatnya Berdoa 🤲</button>
+            <!-- GALERI 6 FOTO (AWALNYA TERSEMBUNYI, DIBUKA SAAT SLIDER DIGESER) -->
+            <div id="gallerySection" class="hidden">
+                <p style="font-size: 0.85rem; margin-top: 15px; font-weight: 600;">Photo Gallery 📸</p>
+                <p style="font-size: 0.7rem; opacity: 0.8; margin-bottom: 8px;">(Scroll ke bawah & Klik gambar untuk memperbesar)</p>
+                
+                <div class="gallery-vertical">
+                    <img src="01.jpeg" onclick="openPhoto(this.src, 'Momen terbaik saat kamu tersenyum ✨')" alt="Foto 1">
+                    <img src="02.jpeg" onclick="openPhoto(this.src, 'Foto favoritku, cantik seperti biasa 💙')" alt="Foto 2">
+                    <img src="03.jpeg" onclick="openPhoto(this.src, 'Kenangan indah yang selalu diingat 📸')" alt="Foto 3">
+                    <img src="04.jpeg" onclick="openPhoto(this.src, 'Tetap jadi dirimu yang baik ya! 🌷')" alt="Foto 4">
+                    <img src="05.jpeg" onclick="openPhoto(this.src, 'Senyum manis yang selalu bikin adem 💖')" alt="Foto 5">
+                    <img src="06.jpeg" onclick="openPhoto(this.src, 'Bahagia terus ya untuk seterusnya! 🌟')" alt="Foto 6">
+                </div>
+
+                <button class="btn" style="margin-top: 10px;" onclick="goToPage(4)">Saatnya Berdoa 🤲</button>
+            </div>
         </div>
 
         <!-- HALAMAN 4: Make a Wish / Berdoa -->
@@ -561,7 +627,7 @@
             <h2 class="name" style="border: none;">Lusi Septiana 🩵</h2>
             <p class="message" style="text-align: center;">
                 Best wishes for special people.<br>
-                Maaf nggak bisa merayakan langsung di hadapanmu, tapi do'aku tulus semoga semesta selalu berpihak ke kamu! ✨🎂🎉
+                Maaf nggak bisa merayakan yang lebih meriah buat kamu, semoga kamu suka dan bahagian yah syangku! ✨🎂🎉
             </p>
         </div>
 
@@ -683,6 +749,55 @@
                 startTypewriter(); // Jalankan efek mengetik di halaman 2
             }
         }
+
+        // LOGIKA SLIDER GESER GALERI (DRAG / TOUCH SWIPE)
+        const handle = document.getElementById('swipeHandle');
+        const track = document.getElementById('swipeTrack');
+        let isDragging = false;
+        let startX = 0;
+
+        function getClientX(e) {
+            return e.touches ? e.touches[0].clientX : e.clientX;
+        }
+
+        function startDrag(e) {
+            isDragging = true;
+            startX = getClientX(e) - handle.offsetLeft;
+        }
+
+        function doDrag(e) {
+            if (!isDragging) return;
+            let currentX = getClientX(e) - startX;
+            let maxLeft = track.clientWidth - handle.clientWidth - 6;
+
+            if (currentX < 3) currentX = 3;
+            if (currentX > maxLeft) currentX = maxLeft;
+
+            handle.style.left = currentX + 'px';
+
+            if (currentX >= maxLeft - 5) {
+                isDragging = false;
+                document.getElementById('swipeSection').classList.add('hidden');
+                document.getElementById('gallerySection').classList.remove('hidden');
+            }
+        }
+
+        function stopDrag() {
+            if (!isDragging) return;
+            isDragging = false;
+            let maxLeft = track.clientWidth - handle.clientWidth - 6;
+            if (parseInt(handle.style.left) < maxLeft - 5) {
+                handle.style.left = '3px';
+            }
+        }
+
+        handle.addEventListener('mousedown', startDrag);
+        document.addEventListener('mousemove', doDrag);
+        document.addEventListener('mouseup', stopDrag);
+
+        handle.addEventListener('touchstart', startDrag, { passive: true });
+        document.addEventListener('touchmove', doDrag, { passive: true });
+        document.addEventListener('touchend', stopDrag);
 
         // FITUR 3: FUNGSI BUKA & TUTUP ZOOM FOTO DENGAN CAPTION
         function openPhoto(src, caption) {
